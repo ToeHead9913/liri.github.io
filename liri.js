@@ -1,7 +1,8 @@
+require("dotenv").config();
 var keys = require('./keys.js');
 var Twitter = require('twitter');
-var spotify = require('spotify');
-var request = require('request');
+var Spotify = require('node-spotify-api');
+var axios = require('axios');
 
 var getTweets = function () {
 
@@ -22,6 +23,13 @@ var getTweets = function () {
 
 }
 
+var spotify = new Spotify({
+    id: keys.spotify.id ,
+    secret:keys.spotify.secret
+});
+
+
+
 var getArtistNames = function(artist) {
     return artist.name;
 }
@@ -33,14 +41,17 @@ spotify.search({ type: 'track', query: songName }, function (err, data) {
         console.log('Error occurred: ' + err);
         return;
     }
+    console.log("data:");
+    
+    console.log(data.tracks);
+
 
    
 
     var songs = data.tracks.items;
-    for(var i = 0; i<songs.length; i++) {
+    for(var i = 0; i < songs.length; i++) {
         console.log(i);
-        console.log('artist(s): ' + songs[i].artists.map(
-            getArtistNames));
+        console.log('artist(s): ' + songs[i].artists.map(getArtistNames));
         console.log('song name: ' + songs[i].name);
         console.log('preview song: ' + songs[i].preview_url);
         console.log('album: ' + songs[i].album.name);
@@ -51,10 +62,12 @@ spotify.search({ type: 'track', query: songName }, function (err, data) {
 
 var getMovie = function(movieName) {
 
-request('http://www.omdbapi.com/?apikey=['+ movieName +']&', function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-    
-        var jsonData = JSON.parse(body);
+axios.get("https://www.omdbapi.com/?t=" + movieName + "&apikey=trilogy").then(function (response) {  
+        // console.log(response);
+          
+        var jsonData = response.data;
+        // console.log(response.data);
+        
 
         console.log('Title: ' + jsonData.Title);
         console.log('Year: ' + jsonData.Year);
@@ -66,7 +79,6 @@ request('http://www.omdbapi.com/?apikey=['+ movieName +']&', function (error, re
         console.log('Actors: ' + jsonData.Actors);
         console.log('Rotten Tomatoes Rating: ' + jsonData.tomatoRating);
         console.log('Rotten Tomatoes URL: ' + jsonData.tomatoURL);
-    }
 });
 }
 
